@@ -1,0 +1,43 @@
+#version 330 core
+
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform vec3 cameraPosition;
+uniform vec3 lightPosition;
+uniform vec3 ambientLight;
+uniform vec3 matAmb;
+uniform vec3 matDiff;
+uniform vec3 matSpec;
+uniform vec3 lightAmb;
+uniform vec3 lightDiff;
+uniform vec3 lightSpec;
+uniform int lightSwitch;
+
+layout (location = 0)  in vec3 vertPosition;
+layout (location = 1)  in vec3 vertNormal;
+
+out vec3 myColor;
+
+void main()
+{	
+	gl_Position = projectionMatrix * modelViewMatrix * vec4(vertPosition, 1.0);
+	vec3 l = normalize(lightPosition - vertPosition);
+	vec3 v = normalize(cameraPosition - vertPosition);
+	vec3 r = 2 * dot(l, vertNormal) * vertNormal - l;
+	float s = clamp(dot(r, v), 0, 1);
+	s = pow(s, 3);
+
+	vec3 global = matAmb * ambientLight;
+	vec3 ambient = matAmb * lightAmb;
+	vec3 diffuse = matDiff * lightDiff * dot(l, vertNormal);
+	vec3 specular = matSpec * lightSpec * s;
+
+	if (lightSwitch == 1)
+	{
+		myColor = global + ambient + diffuse + specular;
+	}
+	else
+	{
+		myColor = global;
+	}
+}
